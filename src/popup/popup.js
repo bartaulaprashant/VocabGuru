@@ -1,0 +1,1 @@
+console.log("Vocabulary Saver popup loaded");

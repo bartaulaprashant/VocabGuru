@@ -1,0 +1,12 @@
+{
+    "manifest_version":3,
+    "name":"Vocab Guru",
+    "version":"0.1.0",
+    "description":"Save and manage vocabulary while browsing",
+    "action":{
+        "default_popup":"src/popup/index.html"
+    },
+    "background":{
+        "service_worker":"src/background/service-worker.js"
+    }
+}

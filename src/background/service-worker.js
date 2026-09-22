@@ -1,0 +1,1 @@
+console.log("Vocabulary Saver service worker started");
