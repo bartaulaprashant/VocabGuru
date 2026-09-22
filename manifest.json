@@ -3,6 +3,10 @@
     "name":"Vocab Guru",
     "version":"0.1.0",
     "description":"Save and manage vocabulary while browsing",
+    "permissions":[
+        "contextMenus",
+        "storage"
+    ],
     "action":{
         "default_popup":"src/popup/index.html"
     },
