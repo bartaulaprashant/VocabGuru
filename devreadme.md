@@ -88,7 +88,18 @@
 
   "side_panel": {
     "default_path": "sidepanel.html"
-  }
+  },
+
+  "content_scripts": [
+    {
+      # To tell Chrome where and when to run your content script, you register it under the content_scripts key in your manifest.json
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      # : CSS files listed in css automatically get applied to the page matching the patterns.
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ]
 
 }
 ```
@@ -101,5 +112,46 @@
 
 - chrome is the foundational Chrome Extension API that acts as the bridge between your extension’s background service worker, popups, options pages, side panels, and content scripts. Lifecycle Events: Listens to extension lifecycle events (e.g., onInstalled, onStartup, onSuspend).   Message Passing: Allows communication across extension contexts using chrome.runtime.sendMessage() and chrome.runtime.onMessage.addListener().Metadata & URLs: Fetches public asset URLs (e.g., chrome.runtime.getURL('icon.p   ng')) or version info (chrome.runtime.getManifest()).
 
-### Context Menus 
-- 
+### Content scripts
+- Content scripts are the bridge between your Chrome extension and the web pages your user visits. They are JavaScript files that run directly inside the browser tabs, giving you the power to read, modify, and interact with the DOM of any webpage.
+
+- Content scripts live in an Isolated World. They share the exact same DOM as the web page, but their JavaScript environment is completely separate.
+- Because the DOM is shared, standard DOM manipulation functions work out of the box:// content.js - Highlighting all H1 headings on the host page
+const headers = document.querySelectorAll('h1');
+
+# lifecycle of content script 
+- document_start Before document element are parsed or scripts run. Used for hiding elements early to prevent visual flashes
+- document_end After document element are parsed or scripts run(after DOM tree construction). Used to start DOM manipulation
+- document_idle After the page is fully loaded and idle. Used to General tasks, heavy scraping, API fetches.
+- We can inject content scripts programmatically on demand using chrome.scripting.executeScript() or chrome.tabs.executeScript(). for eg when user clicks 
+
+# content script <-> Service worker communication 
+- Pattern A - content script send a one time request 
+```bash 
+// Send a message to the Service Worker
+chrome.runtime.sendMessage(
+  { action: "FETCH_USER_SETTINGS", userId: 42 },
+  (response) => {
+    console.log("Service Worker replied:", response.status);
+  }
+);
+```
+```bash 
+// Listen for messages from content scripts
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "FETCH_USER_SETTINGS") {
+    // Perform async or privilege-restricted tasks
+    sendResponse({ status: "SUCCESS", theme: "dark" });
+  }
+  return true; // Keeps the message channel open for async responses
+});
+```
+
+- Pattern B - Service Worker sends a message to Content Script
+```bash
+// To send a message to a content script, target a specific tab
+chrome.tabs.sendMessage(tabId, { action: "TOGGLE_DARK_MODE" }, (response) => {
+  console.log("Content script acknowledged mode change");
+});
+```
+

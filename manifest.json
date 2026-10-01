@@ -5,12 +5,20 @@
     "description":"Save and manage vocabulary while browsing",
     "permissions":[
         "contextMenus",
-        "storage"
+        "storage",
+        "tabs"
     ],
     "action":{
         "default_popup":"src/popup/index.html"
     },
     "background":{
         "service_worker":"src/background/service-worker.js"
-    }
+    },
+    "content_scripts":[
+        {
+            "matches":["<all_urls>"],
+            "js":["src/content/content.js"],
+            "run_at":"document_idle"
+        }
+    ]
 }
