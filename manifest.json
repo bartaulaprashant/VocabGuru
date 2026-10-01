@@ -7,8 +7,8 @@
         "contextMenus",
         "storage",
         "tabs",
-        "activeTabs",
-        "scripting"
+        "scripting",
+        "sidePanel"
     ],
     "host_permissions":["<all_urls>"],
     "content_scripts":[
@@ -23,5 +23,17 @@
     },
     "background":{
         "service_worker":"src/background/service-worker.js"
+    },
+    "side_panel":{
+        "default_path":"src/sidepanel/index.html"
+    },
+    "commands":{
+        "_execute_action":{
+            "suggested_key":{
+                "default":"Ctrl+Shift+Y",
+                "mac":"Command+Shift+Y"
+            },
+            "description":"Opens the extension sidepanel"
+        }
     }
 }

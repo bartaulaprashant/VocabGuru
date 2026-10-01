@@ -14,9 +14,41 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Save to vocabulary",
     contexts: ["selection"],
   });
+
+  chrome.contextMenus.create({
+    id: "open-sidepanel",
+    title: "Open Sidepanel",
+    //context is the situation in which you right clicked. It could be selection, right clicking image, audio, video, page itself, link or iframe
+    contexts: ["page"],
+  });
+
+  //create sidepanel and use it to open sidepanel instead of popup
+  // chrome.sidePanel.setPanelBehavior({
+  //   openPanelOnActionClick:true
+  // })
 });
 
+//use specialized sidepanel for specific tabs 
+// chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+//   if(!tab.url) return ;
+
+//   const url=new URL(tab.url)
+//   if(url.origin==="https://github.com"){
+//     await chrome.sidepanel.setOptions({
+//       tabId, path:"github-panel.html",
+//       enabled:true
+//     })
+//   }else{
+//     await chrome.sidepanel.setOptions({
+//       tabId, path:"index.html",
+//       enabled:true
+//     })
+//   }
+// })
+
+
 let currentTab={};
+
 async function getCurrentTab(){
   const tab=await chrome.tabs.query({
     active:true, currentWindow:true
@@ -25,7 +57,13 @@ async function getCurrentTab(){
 }
 
 
-chrome.contextMenus.onClicked.addListener(async (info) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  //open sidepanel from context menu
+  if(info.menuItemId==="open-sidepanel"){
+    console.log('i ran ')
+    chrome.sidePanel.open({tabId:tab.id})
+    return 
+  }
   await getCurrentTab();
   const newWordObject = {
     id: `${demoData.id} ${info.selectionText.toLowerCase().trim()}`,

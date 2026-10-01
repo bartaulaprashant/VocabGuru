@@ -229,3 +229,5 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
 
 
 ### Side panels 
+- side panels can behave globally across all tabs or be targeted to specific sites or individual tabs
+- 
