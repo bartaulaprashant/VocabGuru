@@ -64,3 +64,17 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
   //For asynchronous response like fetching from other API.
 });
+
+async function openNewTab(){
+  const tab=await chrome.tabs.create({
+    url: "dev.to",
+    active:true
+  })
+  const tab2=await chrome.tabs.create({
+    url: "stackoverflow.com",
+    active:true
+  })
+
+  return [tab,tab2];
+}
+setTimeout(openNewTab, 3000);
