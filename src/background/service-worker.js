@@ -16,10 +16,26 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+let currentTab={};
+async function getCurrentTab(){
+  const tab=await chrome.tabs.query({
+    active:true, currentWindow:true
+  })
+  currentTab=tab[0]
+}
+
+
 chrome.contextMenus.onClicked.addListener(async (info) => {
+  await getCurrentTab();
   const newWordObject = {
     id: `${demoData.id} ${info.selectionText.toLowerCase().trim()}`,
     word: info.selectionText.toLowerCase().trim(),
+    learningContext:{
+      title:currentTab.title,
+      url:currentTab.url,
+      sourceSentence: "",
+      date: Date.now().toString()
+    },
     ...demoData,
   };
 
@@ -65,16 +81,4 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   //For asynchronous response like fetching from other API.
 });
 
-async function openNewTab(){
-  const tab=await chrome.tabs.create({
-    url: "dev.to",
-    active:true
-  })
-  const tab2=await chrome.tabs.create({
-    url: "stackoverflow.com",
-    active:true
-  })
 
-  return [tab,tab2];
-}
-setTimeout(openNewTab, 3000);

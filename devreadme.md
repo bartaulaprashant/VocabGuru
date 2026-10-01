@@ -126,6 +126,7 @@ const headers = document.querySelectorAll('h1');
 - We can inject content scripts programmatically on demand using chrome.scripting.executeScript() or chrome.tabs.executeScript(). for eg when user clicks 
 
 # content script <-> Service worker communication 
+
 - Pattern A - content script send a one time request 
 ```bash 
 // Send a message to the Service Worker
@@ -154,4 +155,77 @@ chrome.tabs.sendMessage(tabId, { action: "TOGGLE_DARK_MODE" }, (response) => {
   console.log("Content script acknowledged mode change");
 });
 ```
+### Chrome tabs
 
+<!-- //Chrome tabs API
+// async function openNewTab(){
+//   const tab=await chrome.tabs.create({
+//     url: "dev.to",
+//     active:true
+//   })
+//   return tab;
+// }
+
+// async function getCurrentTab(){
+  //   const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+  //   console.log(tab)
+  //   return tab;
+  // }
+  // getCurrentTab()
+
+
+// async function getYoutubeTabs(){
+//   const tabs=await chrome.tabs.query({
+//     url:"*://*.youtube.com/*"
+//   })
+//   console.log(tabs)
+// }
+
+
+// async function getCurrentWindow(){
+//   const tabs=await chrome.tabs.query({ currentWindow:true })
+//   console.log(tabs)
+// }
+// setTimeout(getCurrentWindow, 3000);
+
+// async function updateTab(tabId) {
+//   // Navigate the tab to a new URL and mute it
+//   await chrome.tabs.update(tabId, {
+//     url: "https://developer.chrome.com",
+//     muted: true
+//   });
+// }
+
+// async function closeTab(tabId) {
+//   await chrome.tabs.remove(tabId);
+// }
+
+// // Close multiple tabs by ID
+// async function closeMultipleTabs(tabIds) {
+//   await chrome.tabs.remove(tabIds); // Accepts an array of tab IDs
+// } -->
+
+<!-- // Triggered when a new tab is created
+chrome.tabs.onCreated.addListener((tab) => {
+  console.log("New tab opened:", tab.id);
+});
+
+// Triggered when a tab updates (e.g., URL change, loading status)
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    console.log(`Tab ${tabId} finished loading: ${tab.url}`);
+  }
+});
+
+// Triggered when the user switches to a different tab
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  console.log(`Active tab changed to ID: ${activeInfo.tabId}`);
+});
+
+// Triggered when a tab is closed
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+  console.log(`Tab closed: ${tabId}`);
+}); -->
+
+
+### Side panels 

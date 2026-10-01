@@ -7,7 +7,6 @@ let vocabulary = {};
            action: "get-vocabulary"
          }, (response)=>{
              vocabulary = response.data || {};
-             console.log(vocabulary)
              renderVocabulary(Object.values(vocabulary));
          });
     } catch (error) {
