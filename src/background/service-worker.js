@@ -47,24 +47,26 @@ chrome.runtime.onInstalled.addListener(() => {
 // })
 
 
-let currentTab={};
 
 async function getCurrentTab(){
   const tab=await chrome.tabs.query({
     active:true, currentWindow:true
   })
-  currentTab=tab[0]
+  const currentTab=tab[0]
+  return currentTab;
 }
 
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   //open sidepanel from context menu
   if(info.menuItemId==="open-sidepanel"){
-    console.log('i ran ')
-    chrome.sidePanel.open({tabId:tab.id})
+    //for a specific tab 
+    // chrome.sidePanel.open({tabId:tab.id})
+    //for opening globally in all tabs of current window 
+    chrome.sidePanel.open({windowId:tab.windowId})
     return 
   }
-  await getCurrentTab();
+  const currentTab=await getCurrentTab();
   const newWordObject = {
     id: `${demoData.id} ${info.selectionText.toLowerCase().trim()}`,
     word: info.selectionText.toLowerCase().trim(),
@@ -102,9 +104,14 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     sendResponse({ success: true, data: result.vocabulary});
     return true;
   }
+  if(message.action==='get-currentTab'){
+    const currentTab=await getCurrentTab();
+    sendResponse({ tab:currentTab});
+    return true;
+  }
 
   /**
-     * chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+     * chrome.runtime.onMcessage.addListener((message, sender, sendResponse) => {
     if (message.action === "fetchDataFromAPI") {
         fetch("https://api.example.com/data")
         .then((res) => res.json())

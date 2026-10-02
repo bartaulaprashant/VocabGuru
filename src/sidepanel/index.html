@@ -4,10 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="panel.css">
 </head>
 <body>
-    <div>
-        <h1>I am side panel. </h1>
+    <div id="main-container">
+
+        <!-- header  -->
+        <div id="header">
+            <h1>Vocab Guru</h1>
+        </div>
+
+        <!-- word overview wrapper  -->
+         <div id="word-overview">
+            <h2>Word Overview</h2>
+
+            <!-- word data  -->
+            <div id="word-data">
+                <p>Word: <span id="word"></span></p>
+                <p>Meaning: <span id="meaning"></span></p>
+                <p>Part of Speech: <span id="part-of-speech"></span></p>
+                <p>Examples: <span id="examples"></span></p>
+                <p>Synonyms: <span id="synonyms"></span></p>
+            </div>
+         </div>
+
     </div>
+
+    <!-- Panel Close button  -->
+     <div id="panel-close-button">
+        <span>Close</span>
+     </div>
+    <script src="panel.js"></script>
 </body>
 </html>

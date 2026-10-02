@@ -1,0 +1,23 @@
+#main-container{
+    padding: 15px 20px;
+}
+#word-overview{
+    margin-top:40px;
+}
+#word-data{
+    margin-top:20px;
+}
+#panel-close-button{
+    position: absolute;
+    top: 13px;
+    right: 20px;
+    cursor: pointer;
+}
+
+
+.theme-light{
+    
+}
+.theme-dark{
+
+}
