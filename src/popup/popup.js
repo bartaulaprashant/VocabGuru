@@ -31,12 +31,10 @@ function renderVocabulary(wordsObject) {
     listItem.textContent = wordObject.word;
     wordList.appendChild(listItem);
     listItem.addEventListener("click", async () => {
-
       const [tab] = await chrome.tabs.query({
         active: true,
         currentWindow: true,
       });
-      
       //  Store data while popup is alive
       await chrome.storage.session.set({
         wordObject: wordObject,
