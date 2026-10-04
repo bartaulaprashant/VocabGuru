@@ -28,7 +28,7 @@ chrome.runtime.onInstalled.addListener(() => {
   // })
 });
 
-//use specialized sidepanel for specific tabs 
+//use specialized sidepanel for specific tabs
 // chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 //   if(!tab.url) return ;
 
@@ -46,35 +46,33 @@ chrome.runtime.onInstalled.addListener(() => {
 //   }
 // })
 
-
-
-async function getCurrentTab(){
-  const tab=await chrome.tabs.query({
-    active:true, currentWindow:true
-  })
-  const currentTab=tab[0]
+async function getCurrentTab() {
+  const tab = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+  const currentTab = tab[0];
   return currentTab;
 }
 
-
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   //open sidepanel from context menu
-  if(info.menuItemId==="open-sidepanel"){
-    //for a specific tab 
+  if (info.menuItemId === "open-sidepanel") {
+    //for a specific tab
     // chrome.sidePanel.open({tabId:tab.id})
-    //for opening globally in all tabs of current window 
-    chrome.sidePanel.open({windowId:tab.windowId})
-    return 
+    //for opening globally in all tabs of current window
+    chrome.sidePanel.open({ windowId: tab.windowId });
+    return;
   }
-  const currentTab=await getCurrentTab();
+  const currentTab = await getCurrentTab();
   const newWordObject = {
     id: `${demoData.id} ${info.selectionText.toLowerCase().trim()}`,
     word: info.selectionText.toLowerCase().trim(),
-    learningContext:{
-      title:currentTab.title,
-      url:currentTab.url,
+    learningContext: {
+      title: currentTab.title,
+      url: currentTab.url,
       sourceSentence: "",
-      date: Date.now().toString()
+      date: Date.now().toString(),
     },
     ...demoData,
   };
@@ -101,16 +99,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.action === "get-vocabulary") {
     const result = await chrome.storage.local.get("vocabulary");
-    sendResponse({ success: true, data: result.vocabulary});
+    sendResponse({ success: true, data: result.vocabulary });
     return true;
   }
-  if(message.action==='get-currentTab'){
-    const currentTab=await getCurrentTab();
-    sendResponse({ tab:currentTab});
+  if (message.action === "get-currentTab") {
+    const currentTab = await getCurrentTab();
+    sendResponse({ tab: currentTab });
     return true;
   }
-  
 
+  
   /**
      * chrome.runtime.onMcessage.addListener((message, sender, sendResponse) => {
     if (message.action === "fetchDataFromAPI") {
@@ -126,5 +124,3 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
   //For asynchronous response like fetching from other API.
 });
-
-

@@ -231,3 +231,11 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
 ### Side panels 
 - side panels can behave globally across all tabs or be targeted to specific sites or individual tabs
 - 
+
+## issed encountered
+- popup context was closing after i opened sidepanel from its js code which caused the rest of the code to not execute and sidepanel only opened with no necessary data filled that was supposed to be sent from popup context to sidepanel.
+
+### Pending Bug 
+- filterd words not working
+- cant get overview of another word from popup when sidepanel has already been filled with existing, if tried to refresh the sidepanel then popup js wont run
+- 

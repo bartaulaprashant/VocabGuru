@@ -1,6 +1,7 @@
 const wordList = document.getElementById("word-list");
 const searchInput = document.getElementById("search-input");
-let vocabulary = {};
+let vocabulary = {},
+  filteredWords = [];
 async function loadVocabulary() {
   try {
     await chrome.runtime.sendMessage(
@@ -9,6 +10,10 @@ async function loadVocabulary() {
       },
       (response) => {
         vocabulary = response.data || {};
+        const wordsOnly = Object.values(vocabulary).map(
+          (wordObject) => wordObject.word,
+        );
+        filteredWords = Object.values(wordsOnly.slice(0, wordsOnly.length - 1));
         renderVocabulary(Object.values(vocabulary));
       },
     );
@@ -26,33 +31,34 @@ function renderVocabulary(wordsObject) {
     listItem.textContent = wordObject.word;
     wordList.appendChild(listItem);
     listItem.addEventListener("click", async () => {
-      console.log(' why am i running')
-      // const response = await chrome.runtime.sendMessage({
-      //   action: "get-currentTab",
-      // });
-      // await chrome.sidePanel.open({
-      //   windowId: response.tab.windowId,
-      // });
 
-      await chrome.runtime.sendMessage({
-        action: "word-overview",
-        payload: {
-          wordObject: wordObject,
-        },
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      
+      //  Store data while popup is alive
+      await chrome.storage.session.set({
+        wordObject: wordObject,
+      });
+      await chrome.sidePanel.open({
+        windowId: tab.windowId,
       });
     });
   });
 }
 
-searchInput.addEventListener("input", () => {
-  const searchTerm = searchInput.value.toLowerCase().trim();
-  const filteredWords = Object.values(vocabulary)
-    .map((wordObject) => wordObject.word)
-    .filter((word) => {
-      return word.includes(searchTerm);
-    });
-  renderVocabulary(filteredWords);
-});
+// searchInput.addEventListener("input", () => {
+//   const searchTerm = searchInput.value.toLowerCase().trim();
+//   const filteredSearchWords= filteredWords.filter((word) => {
+//     return word.includes(searchTerm);
+//   });
+//   if(!searchTerm){
+//     console.log('run')
+//     renderVocabulary(Object.values(vocabulary));
+//   }
+//   renderVocabulary(filteredSearchWords);
+// });
 
 loadVocabulary();
 
