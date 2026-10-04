@@ -109,6 +109,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     sendResponse({ tab:currentTab});
     return true;
   }
+  
 
   /**
      * chrome.runtime.onMcessage.addListener((message, sender, sendResponse) => {

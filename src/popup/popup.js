@@ -1,17 +1,20 @@
 const wordList = document.getElementById("word-list");
 const searchInput = document.getElementById("search-input");
 let vocabulary = {};
-  async function loadVocabulary() {
-    try {
-        await chrome.runtime.sendMessage({
-           action: "get-vocabulary"
-         }, (response)=>{
-             vocabulary = response.data || {};
-             renderVocabulary(Object.values(vocabulary));
-         });
-    } catch (error) {
-        console.error(error.message);
-    }
+async function loadVocabulary() {
+  try {
+    await chrome.runtime.sendMessage(
+      {
+        action: "get-vocabulary",
+      },
+      (response) => {
+        vocabulary = response.data || {};
+        renderVocabulary(Object.values(vocabulary));
+      },
+    );
+  } catch (error) {
+    console.error(error.message);
+  }
 }
 function renderVocabulary(wordsObject) {
   wordList.innerHTML = "";
@@ -22,6 +25,22 @@ function renderVocabulary(wordsObject) {
     const listItem = document.createElement("li");
     listItem.textContent = wordObject.word;
     wordList.appendChild(listItem);
+    listItem.addEventListener("click", async () => {
+      console.log(' why am i running')
+      // const response = await chrome.runtime.sendMessage({
+      //   action: "get-currentTab",
+      // });
+      // await chrome.sidePanel.open({
+      //   windowId: response.tab.windowId,
+      // });
+
+      await chrome.runtime.sendMessage({
+        action: "word-overview",
+        payload: {
+          wordObject: wordObject,
+        },
+      });
+    });
   });
 }
 
