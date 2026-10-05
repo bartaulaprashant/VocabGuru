@@ -1,6 +1,6 @@
 const demoData = {
   id: "sldkfljowe",
-  meaning: "so surprising or impressive as to stun or overwhelm; amazing, extraordinary, or breathtaking",
+  meaning: "The study of the origin and historical development of words — how their form and meaning have changed over time..",
   partOfSpeech: "verb",
   examples: ["Fashion is by nature ephemeral", "The beauty of cherry blossoms is ephemeral, lasting only a few weeks each spring."],
   synonyms: ["transient", "passing"]

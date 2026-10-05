@@ -238,4 +238,4 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
 
 ### Pending Bug 
 - filterd words not working
-- cant get overview of another word from popup when sidepanel has already been filled with existing, if tried to refresh the sidepanel then popup js wont run
+- cant get overview of another word from popup when sidepanel has already been filled with existing, if tried to refresh the sidepanel then popup js wont run: fixed

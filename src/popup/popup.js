@@ -14,9 +14,9 @@
 //         {
 //           role: "user",
 //           content: `
-//         Return ONLY a valid JSON object.
+//         Return ONLY a valid JSON object. Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation, give array of Part of speech it can be used in along with example for each of the context its used in, collocations of the word, synonyms of the word, antonyms of the word, Ielts tips and also the word provided as well.  
 
-//         Explain the English word "abandon" for an IELTS student.
+//         Explain the English word "collocation" for an IELTS student.
 
 //         Do not include markdown.
 //         Do not include \`\`\`json.
@@ -24,7 +24,7 @@
 //         },
 //       ],
 
-//       temperature: 0.9,
+//       temperature: 1,
 //       response_format: {
 //         type: "json_object",
 //       },
