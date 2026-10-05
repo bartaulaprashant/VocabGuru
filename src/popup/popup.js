@@ -1,22 +1,58 @@
+// const apiUrl = `https://api.groq.com/openai/v1/chat/completions`;
+
+// const fetchWord = async () => {
+//   const response = await fetch(apiUrl, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer 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`,
+//     },
+//     body: JSON.stringify({
+//       model: "qwen/qwen3.8-27b",
+
+//       messages: [
+//         {
+//           role: "user",
+//           content: `
+//         Return ONLY a valid JSON object.
+
+//         Explain the English word "abandon" for an IELTS student.
+
+//         Do not include markdown.
+//         Do not include \`\`\`json.
+//           `,
+//         },
+//       ],
+
+//       temperature: 0.9,
+//       response_format: {
+//         type: "json_object",
+//       },
+//     }),
+//   });
+
+//   const data = await response.json();
+//   const result = JSON.parse(data.choices[0].message.content);
+
+//   console.log(result);
+// };
+// fetchWord();
+
 const wordList = document.getElementById("word-list");
 const searchInput = document.getElementById("search-input");
 let vocabulary = {},
   filteredWords = [];
 async function loadVocabulary() {
   try {
-    await chrome.runtime.sendMessage(
-      {
-        action: "get-vocabulary",
-      },
-      (response) => {
-        vocabulary = response.data || {};
-        const wordsOnly = Object.values(vocabulary).map(
-          (wordObject) => wordObject.word,
-        );
-        filteredWords = Object.values(wordsOnly.slice(0, wordsOnly.length - 1));
-        renderVocabulary(Object.values(vocabulary));
-      },
+    const response = await chrome.runtime.sendMessage({
+      action: "get-vocabulary",
+    });
+    vocabulary = response.data;
+    const wordsOnly = Object.values(vocabulary).map(
+      (wordObject) => wordObject.word,
     );
+    filteredWords = Object.values(wordsOnly.slice(0, wordsOnly.length - 1));
+    renderVocabulary(Object.values(vocabulary));
   } catch (error) {
     console.error(error.message);
   }
@@ -38,6 +74,9 @@ function renderVocabulary(wordsObject) {
       //  Store data while popup is alive
       await chrome.storage.session.set({
         wordObject: wordObject,
+      });
+      chrome.runtime.sendMessage({
+        action: "reload-call",
       });
       await chrome.sidePanel.open({
         windowId: tab.windowId,

@@ -234,8 +234,8 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
 
 ## issed encountered
 - popup context was closing after i opened sidepanel from its js code which caused the rest of the code to not execute and sidepanel only opened with no necessary data filled that was supposed to be sent from popup context to sidepanel.
+ - AI apis SDK was throwing cors policy erros and parsing error from browser so i switches to REST api of those ai models and reduced the input to only few token because it burns limited token outputs quickly. 
 
 ### Pending Bug 
 - filterd words not working
 - cant get overview of another word from popup when sidepanel has already been filled with existing, if tried to refresh the sidepanel then popup js wont run
-- 

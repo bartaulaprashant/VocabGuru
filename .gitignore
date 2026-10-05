@@ -1,0 +1,4 @@
+devreadme.md
+node_modules/
+src/utils/apiKey.js
+.env

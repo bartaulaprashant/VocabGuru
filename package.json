@@ -4,17 +4,11 @@
   "description": "",
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "build": "vite build"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com-personal2:bartaulaprashant1-gif/VOCAB_GURU.git"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "vite": "^8.3.0"
-  }
+  "license": "ISC"
 }

@@ -1,7 +1,14 @@
+chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
+  if (message.action === "reload-call") {
+    renderWordOverview();
+  }
+})
+
 async function renderWordOverview () {
-  document.getElementById("word-overview-inner").innerHTML = "";
-    const {wordObject} = await chrome.storage.session.get("wordObject");
-    const overviewInner=document.createElement("div");
+  document.getElementById("word-overview-wrapper").innerHTML = "";
+  const {wordObject} = await chrome.storage.session.get("wordObject");
+    let overviewInner=document.createElement("div");
+    overviewInner.id = "word-overview-inner";
     Object.keys(wordObject).forEach((key) => {
       if (Array.isArray(wordObject[key]) && typeof(wordObject[key]) === "object") {
         let dataArrayWrapper = document.createElement("div");
@@ -38,17 +45,18 @@ async function renderWordOverview () {
         return;
       }
       
-
+      
       const div = document.createElement("div");
       div.className = "overview-data";
       div.innerHTML = `<h4>${key}</h4><p>${wordObject[key]}</p>`;
       overviewInner.appendChild(div);
     });
-    document.getElementById("word-overview-inner").appendChild(overviewInner);
-}
+    document.getElementById("word-overview-wrapper").appendChild(overviewInner);
+  }
 
 renderWordOverview();
-    
+
+  
 //sidepanel close button
 document
   .getElementById("panel-close-button")
@@ -56,5 +64,6 @@ document
     const response = await chrome.runtime.sendMessage({
       action: "get-currentTab",
     });
+    chrome.storage.session.clear();
     chrome.sidePanel.close({ windowId: response.tab.windowId });
   });
