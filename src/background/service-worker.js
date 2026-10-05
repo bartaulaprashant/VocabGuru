@@ -1,11 +1,10 @@
 const demoData = {
   id: "sldkfljowe",
-  meaning: " something related to the word",
-  partOfSpeech: "noun",
-  examples: ["example 1", "example 2"],
-  synonyms: ["synonym 1", "synonym 2"],
-};
-
+  meaning: "so surprising or impressive as to stun or overwhelm; amazing, extraordinary, or breathtaking",
+  partOfSpeech: "verb",
+  examples: ["Fashion is by nature ephemeral", "The beauty of cherry blossoms is ephemeral, lasting only a few weeks each spring."],
+  synonyms: ["transient", "passing"]
+}
 //chrome provides event called onInstalled when the extension is installed, updated or sometimes reloaded during development. Basically execute this callback function when the user installs or .....
 chrome.runtime.onInstalled.addListener(() => {
   // create a menu on right click when selection is made
