@@ -1,10 +1,3 @@
-const demoData = {
-  id: "sldkfljowe",
-  meaning: "The study of the origin and historical development of words — how their form and meaning have changed over time..",
-  partOfSpeech: "verb",
-  examples: ["Fashion is by nature ephemeral", "The beauty of cherry blossoms is ephemeral, lasting only a few weeks each spring."],
-  synonyms: ["transient", "passing"]
-}
 //chrome provides event called onInstalled when the extension is installed, updated or sometimes reloaded during development. Basically execute this callback function when the user installs or .....
 chrome.runtime.onInstalled.addListener(() => {
   // create a menu on right click when selection is made
@@ -63,17 +56,46 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     chrome.sidePanel.open({ windowId: tab.windowId });
     return;
   }
-  const currentTab = await getCurrentTab();
-  const newWordObject = {
-    id: `${demoData.id} ${info.selectionText.toLowerCase().trim()}`,
-    word: info.selectionText.toLowerCase().trim(),
-    learningContext: {
-      title: currentTab.title,
-      url: currentTab.url,
-      sourceSentence: "",
-      date: Date.now().toString(),
+
+  const response = await fetch(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer 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`,
+      },
+      body: JSON.stringify({
+        model: "qwen/qwen3.8-27b",
+
+        messages: [
+          {
+            role: "user",
+            content: `
+        Return ONLY a valid JSON object with exact keys(collocations, ielts_tips, meanings, parts_of_speech_examples, pronunciation, synonyms, antonyms, word, ielts_relevant_topics). Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation, give array of Part of speech it can be used in along with example for each of the context its used in, collocations of the word, synonyms of the word, antonyms of the word, Ielts tips, ielts relevant topics it can be used in along with example for each and also the word provided as well.  
+
+        Explain the English word "${info.selectionText.toLowerCase().trim()}" for an IELTS student.
+
+        Do not include markdown.
+        Do not include \`\`\`json.
+          `,
+          },
+        ],
+
+        temperature: 1,
+        response_format: {
+          type: "json_object",
+        },
+      }),
     },
-    ...demoData,
+  );
+
+  const data = await response.json();
+  const wordDataResult = JSON.parse(data.choices[0].message.content);
+
+  const newWordObject = {
+    id: `${crypto.randomUUID()}`,
+    ...wordDataResult
   };
 
   const result = await chrome.storage.local.get("vocabulary");
@@ -106,20 +128,4 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     sendResponse({ tab: currentTab });
     return true;
   }
-
-  
-  /**
-     * chrome.runtime.onMcessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "fetchDataFromAPI") {
-        fetch("https://api.example.com/data")
-        .then((res) => res.json())
-      .then((data) => sendResponse({ status: "ok", data }))
-      .catch((err) => sendResponse({ status: "error", error: err.message }));
-
-    return true; // Keep channel open for async sendResponse
-  }
-});
-     */
-
-  //For asynchronous response like fetching from other API.
 });

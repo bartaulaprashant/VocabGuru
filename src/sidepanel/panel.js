@@ -1,79 +1,153 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "reload-call") {
-    // renderWordOverview();
+    renderWordOverview();
   }
 });
 
-const demoData = {
-  collocations: [
-    "strong collocation",
-    "common collocation",
-    "natural collocation",
-    "verb collocation",
-    "noun collocation",
-    "study collocations",
-    "master collocations",
-  ],
-  ielts_tips: [
-    "Using correct collocations significantly improves …ctions by making your language sound native-like.",
-    "Memorize words in chunks (e.g., 'heavy rain' not just 'rain') to sound more fluent and accurate.",
-    "Read academic articles to encounter collocations i…stand which words naturally pair with each other.",
-  ],
-  meanings: [
-    "The natural and customary association of one word with another in English",
-    "A phrase or group of words that are habitually used together",
-  ],
-  parts_of_speech_examples: [
-    {
-      example:
-        "Learners often struggle with verb-noun collocations such as 'make a decision' rather than 'do a decision'.",
-      part_of_speech: "noun",
-    },
-    {
-      example:
-        "The textbook focuses heavily on verbal collocations to improve fluency.",
-      part_of_speech: "adjective (in compound nouns)",
-    },
-  ],
 
-  pronunciation: "/ˌkɒləˈkeɪʃən/",
-  synonyms:[
-    "idiom", "phrase", "set phrase", "binomial pair" 
-  ],
-  antonyms: [
-    "random combination", "incorrect pair"
-  ],
-  word:"collocation"
-};
-// async function renderWordOverview() {
-//   document.getElementById("word-overview-wrapper").innerHTML = "";
-//   const { wordObject } = await chrome.storage.session.get("wordObject");
-//   let overviewInner = document.createElement("div");
-//   overviewInner.id = "word-overview-inner";
-//   Object.keys(wordObject).forEach((key) => {
-//     if (Array.isArray(wordObject[key]) && typeof wordObject[key] === "object") {
+async function renderWordOverview() {
+  const {wordObject}=await chrome.storage.session.get('wordObject')
+  document.getElementById("word-overview-wrapper").innerHTML = "";
+  let partsOfSpeech = "",
+    meanings = "",
+    examples = "",
+    ieltsTips = "", collocations="", synonyms="", antonyms="";
+  Object.values(wordObject.parts_of_speech_examples).forEach((element) => {
+    partsOfSpeech += `<li>${element.part_of_speech}</li>`;
+    examples += `
+        <p class="example-data">
+                  ${element.example}
+                  <span class="part-of-speech-tag">${element.part_of_speech}</span>
+                </p>
+    `;
+  });
+  wordObject.meanings.forEach((element) => {
+    meanings += `  <p class="highlighted-data">
+                ${element}
+              </p>`;
+  });
+  Array.isArray(wordObject.ielts_tips)?(wordObject.ielts_tips.forEach((element) => {
+    ieltsTips += `
+   <p>
+                  <span
+                    style="margin-right: 5px; font-size: 22px; font-weight: 700"
+                    >↬</span
+                  >
+                  ${element}
+                </p>
+  `;
+  })):(ieltsTips+=`<p> ${wordObject.ielts_tips} </p>`);
+  wordObject.collocations.forEach((element)=>{
+    collocations+=`  <span>"${element}"</span>`
+  })
+  wordObject.synonyms.forEach((element)=>{
+    synonyms+=` <li> <span
+                    style="margin-right: 5px; font-size: 22px; font-weight: 700"
+                    >↬</span>${element}</li>`
+  })
+  wordObject.antonyms.forEach((element)=>{
+    antonyms+=` <li> <span
+                    style="margin-right: 5px; font-size: 22px; font-weight: 700"
+                    >↬</span>${element}</li>`
+  })
 
-//       return;
-//     }
+  document.getElementById("word-overview-wrapper").innerHTML = `
+     <!-- main data - top part -->
+          <div id="word-header">
+            <div id="word-options">
+              <h3>
+                ${wordObject.word}
+                <span
+                  style="
+                    font-style: italic;
+                    font-size: 13px;
+                    color: rgb(157, 157, 156);
+                  "
+                  >${wordObject.pronunciation}</span
+                >
+              </h3>
 
-//     if (
-//       (Array.isArray(wordObject[key] != true) ||
-//         typeof wordObject[key] != "string") &&
-//       typeof wordObject[key] === "object"
-//     ) {
+              <div id="word-options-buttons">
+                <button>
+                  <img src="/icons/megaphone.png" height="20" width="20" />
+                </button>
+                <button>
+                  <img src="/icons/star.png" height="15" width="15" />
+                </button>
+              </div>
+            </div>
+            </div>
 
-//       return;
-//     }
+            <!-- parts of speech  -->
+            <div id="part-of-wrapper">
+              <h4>Parts of Speech</h4>
+              <ul id="part-of-speech-item">
+               ${partsOfSpeech}
+              </ul>
+            </div>
 
-//     const div = document.createElement("div");
-//     div.className = "overview-data";
-//     div.innerHTML = `<h4>${key}</h4><p>${wordObject[key]}</p>`;
-//     overviewInner.appendChild(div);
-//   });
-//   document.getElementById("word-overview-wrapper").appendChild(overviewInner);
-// }
+                <!-- divider line  -->
+          <div id="dividier-line"></div>
 
-// renderWordOverview();
+           <!-- rest of data -->
+          <div id="word-rest-data">
+
+            <!-- meanings  -->
+            <div class="data-wrapper">
+              <h4>Meanings</h4>
+              <div>
+                ${meanings}
+              </div>
+            </div>
+  
+              <!-- Examples  -->
+            <div class="data-wrapper">
+              <h4>Examples</h4>
+              <div style="display: flex; flex-direction: column; gap: 20px;word-break:normal">
+               ${examples}
+              </div>
+            </div>
+
+              <!-- Ielts tips  -->
+            <div class="data-wrapper">
+              <h4>IELTS tips</h4>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+              ${ieltsTips}
+              </div>
+            </div>
+
+            <!-- collocations  -->
+            <div class="data-wrapper">
+              <h4>Collocations</h4>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <p>
+                  ${collocations}
+                </p>
+              </div>
+            </div>
+
+             <!-- synonyms and antonyms -->
+            <div id="syn-ant-outer">
+              <!-- synonyms  -->
+              <div id="left-side">
+                <h4>Synonyms</h4>
+                <ul class="syn-ant-wrapper">
+                ${synonyms}
+                </ul>
+              </div>
+              <div id="right-side">
+                <h4>Antonyms</h4>
+                <ul class="syn-ant-wrapper" >
+                  ${antonyms}
+                </ul>
+              </div>
+            </div>
+           
+          </div>
+  `;
+}
+
+renderWordOverview();
 
 let vocabulary = {};
 async function loadAllVocabulary() {
@@ -93,10 +167,10 @@ function renderAllVocabulary(wordsObject) {
     document.getElementById("words-list").innerHTML += `<li>
                           <div class="top-part">
                               <h3>${wordObject.word}</h3>
-                              <p>/prə-nŭn″sē-ā′shən/</p>
+                              <p>${wordObject.pronunciation}</p>
                           </div>
                           <div class="bottom-part">
-                            <p>${wordObject.meaning}</p>
+                            <p>${wordObject.meanings[0]}</p>
                           </div>
                         </li>`;
   });
