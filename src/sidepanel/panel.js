@@ -3,12 +3,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     renderWordOverview();
   }
 });
-
+let vocabulary = {}, recentVocabularyKeys=[],
+  dataKeys = [];
 
 async function renderWordOverview() {
-  const {wordObject}=await chrome.storage.session.get('wordObject')
+  const { wordObject } = await chrome.storage.session.get("wordObject");
 
-  if(!wordObject){
+  if (!wordObject) {
     document.getElementById("word-overview-wrapper").innerHTML = `
       <div style="text-align:center;word-break:none;color:#d0d0d0;font-weight:500;font-size:18px">
           <h2>Click some words to see overviews</h2>      
@@ -20,7 +21,10 @@ async function renderWordOverview() {
   let partsOfSpeech = "",
     meanings = "",
     examples = "",
-    ieltsTips = "", collocations="", synonyms="", antonyms="";
+    ieltsTips = "",
+    collocations = "",
+    synonyms = "",
+    antonyms = "";
   Object.values(wordObject.parts_of_speech_examples).forEach((element) => {
     partsOfSpeech += `<li>${element.part_of_speech}</li>`;
     examples += `
@@ -35,8 +39,9 @@ async function renderWordOverview() {
                 ${element}
               </p>`;
   });
-  Array.isArray(wordObject.ielts_tips)?(wordObject.ielts_tips.forEach((element) => {
-    ieltsTips += `
+  Array.isArray(wordObject.ielts_tips)
+    ? wordObject.ielts_tips.forEach((element) => {
+        ieltsTips += `
    <p>
                   <span
                     style="margin-right: 5px; font-size: 22px; font-weight: 700"
@@ -45,20 +50,21 @@ async function renderWordOverview() {
                   ${element}
                 </p>
   `;
-  })):(ieltsTips+=`<p> ${wordObject.ielts_tips} </p>`);
-  wordObject.collocations.forEach((element)=>{
-    collocations+=`  <span>"${element}"</span>`
-  })
-  wordObject.synonyms.forEach((element)=>{
-    synonyms+=` <li> <span
+      })
+    : (ieltsTips += `<p> ${wordObject.ielts_tips} </p>`);
+  wordObject.collocations.forEach((element) => {
+    collocations += `  <span>"${element}"</span>`;
+  });
+  wordObject.synonyms.forEach((element) => {
+    synonyms += ` <li> <span
                     style="margin-right: 5px; font-size: 22px; font-weight: 700"
-                    >↬</span>${element}</li>`
-  })
-  wordObject.antonyms.forEach((element)=>{
-    antonyms+=` <li> <span
+                    >↬</span>${element}</li>`;
+  });
+  wordObject.antonyms.forEach((element) => {
+    antonyms += ` <li> <span
                     style="margin-right: 5px; font-size: 22px; font-weight: 700"
-                    >↬</span>${element}</li>`
-  })
+                    >↬</span>${element}</li>`;
+  });
 
   document.getElementById("word-overview-wrapper").innerHTML = `
      <!-- main data - top part -->
@@ -80,8 +86,9 @@ async function renderWordOverview() {
                 <button>
                   <img src="/icons/megaphone.png" height="20" width="20" />
                 </button>
-                <button>
-                  <img src="/icons/star.png" height="15" width="15" />
+                <button id="favourite-button" data-word="${wordObject.word}">
+                ${wordObject.favourite?'<img src="/icons/starfilled.png" height="15" width="15" />':'<img src="/icons/star.png" height="20" width="20" />'}
+                  
                 </button>
               </div>
             </div>
@@ -154,28 +161,43 @@ async function renderWordOverview() {
            
           </div>
   `;
+  document
+    .getElementById("favourite-button")
+    .addEventListener("click", async (e) => {
+      //change the favourite icon
+      vocabulary[wordObject.word].favourite? (e.target.outerHTML = `<img src="/icons/star.png" height="15" width="15" />`)
+        : (e.target.outerHTML = `<img src="/icons/starfilled.png" height="15" width="15" />`);
+      vocabulary[wordObject.word].favourite =
+        !vocabulary[wordObject.word].favourite;
+
+      await chrome.storage.local.set({ vocabulary });
+    });
 }
 
 renderWordOverview();
 
-let vocabulary = {}, dataKeys=[];
 async function loadAllVocabulary() {
   const response = await chrome.runtime.sendMessage({
     action: "get-vocabulary",
   });
-  vocabulary = response.data;
-  if(!vocabulary){
-    document.getElementById("words-list").innerHTML = `<h2 style="text-align:center;padding: 30px 0;"> No vocabulary found </h2>`
-    return;
-  }
-  Object.keys(vocabulary).forEach((key) => {
-    dataKeys.push(key);
+  const response2=await chrome.runtime.sendMessage({
+    action:"get-recent-word-keys"
   })
-  renderAllVocabulary(Object.values(vocabulary));
+  vocabulary = response.data;
+  recentVocabularyKeys=response2.data;
+  vocabulary && Object.keys(vocabulary).forEach((key) => {
+    dataKeys.push(key);
+  });
+  vocabulary?renderAllVocabulary(Object.values(vocabulary)):renderAllVocabulary();
 }
 
-function renderAllVocabulary(wordsObject) {
+function renderAllVocabulary(wordsObject=[]) {
   document.getElementById("words-list").innerHTML = "";
+  if (wordsObject.length === 0) {
+    document.getElementById("words-list").innerHTML =
+      `<h2 style="text-align:center;padding: 30px 0;"> No vocabulary found </h2>`;
+    return;
+  }
   wordsObject.forEach((wordObject, index) => {
     document.getElementById("words-list").innerHTML += `<li>
                           <div class="top-part">
@@ -189,6 +211,34 @@ function renderAllVocabulary(wordsObject) {
   });
 }
 loadAllVocabulary();
+
+document.getElementById("search-input").addEventListener("input", (e) => {
+  const searchTerm = e.target.value.trim().toLowerCase();
+  const filteredKey = dataKeys.filter((key) => {
+    return key.startsWith(searchTerm);
+  });
+  const filteredData = filteredKey.map((key) => {
+    return vocabulary[key];
+  });
+  renderAllVocabulary(filteredData);
+});
+
+
+function handleTabSelection(e) {
+  const tab=e.target.textContent.trim().toLowerCase();
+  const recentVocab=Object.keys(vocabulary).map((key) => {
+    if(recentVocabularyKeys.includes(key)){
+      return vocabulary[key];
+    }
+  })
+  console.log(recentVocab)
+  tab === "all"? renderAllVocabulary(Object.values(vocabulary)):
+ tab=== "favourites" ? renderAllVocabulary(Object.values(vocabulary).filter((wordObject) => wordObject.favourite)):(
+  renderAllVocabulary(recentVocab));
+}
+document.getElementById("all-vocab-button").addEventListener("click", handleTabSelection);
+document.getElementById("favourite-vocab-button").addEventListener("click", handleTabSelection);
+document.getElementById("recent-vocab-button").addEventListener("click", handleTabSelection);
 //sidepanel close button
 document
   .getElementById("panel-close-button")

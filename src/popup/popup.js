@@ -6,21 +6,22 @@ async function loadVocabulary() {
     const response = await chrome.runtime.sendMessage({
       action: "get-vocabulary",
     });
+    let recentWordKeys=await chrome.storage.local.get('recentWordKeys');
+    recentWordKeys.hasOwnProperty('recentWordKeys')?recentWordKeys=recentWordKeys.recentWordKeys:recentWordKeys=[]
     vocabulary = response.data;
     const wordsOnly = Object.values(vocabulary).map(
       (wordObject) => wordObject.word,
     );
-    console.log(wordsOnly)
-    renderVocabulary(Object.values(vocabulary));
+    renderVocabulary(vocabulary, recentWordKeys);
   } catch (error) {
     console.error(error.message);
   }
 }
-function renderVocabulary(wordsObject) {
+function renderVocabulary(wordsObject, recentWordKeys) {
   wordList.innerHTML = "";
-  wordsObject.forEach((wordObject, index) => {
+  Object.keys(wordsObject).forEach((key, index) => {
     const listItem = document.createElement("li");
-    listItem.textContent = wordObject.word;
+    listItem.textContent = wordsObject[key].word;
     wordList.appendChild(listItem);
     listItem.addEventListener("click", async () => {
       const [tab] = await chrome.tabs.query({
@@ -29,11 +30,21 @@ function renderVocabulary(wordsObject) {
       });
       //  Store data while popup is alive
       await chrome.storage.session.set({
-        wordObject: wordObject,
+        wordObject: wordsObject[key],
       });
       chrome.runtime.sendMessage({
         action: "reload-call",
       });
+      
+      //store recently interacted data keys into the recent keys array and push to storage 
+
+      recentWordKeys.length > 9 && recentWordKeys.shift();
+      recentWordKeys.push(key);
+
+      const unique = new Set(recentWordKeys.reverse());  
+      recentWordKeys = Array.from(unique).reverse();
+      await chrome.storage.local.set({ recentWordKeys: recentWordKeys });
+
       await chrome.sidePanel.open({
         windowId: tab.windowId,
       });

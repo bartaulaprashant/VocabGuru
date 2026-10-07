@@ -95,6 +95,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
   const newWordObject = {
       id: `${crypto.randomUUID()}`,
+      favourite:false,
       ...wordDataResult
   };
 
@@ -111,6 +112,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       : (vocabulary[wordDataResult.word.trim().toLowerCase()] = newWordObject)
     : (vocabulary[wordDataResult.word.trim().toLowerCase()] = newWordObject);
 
+    let recentWordKeys=await chrome.storage.local.get('recentWordKeys');
+    recentWordKeys.hasOwnProperty('recentWordKeys')?recentWordKeys=recentWordKeys.recentWordKeys:recentWordKeys=[]
+    recentWordKeys.push(wordDataResult.word.trim().toLowerCase())
+    await chrome.storage.local.set({recentWordKeys})
+
   await chrome.storage.local.set({
    vocabulary
   });
@@ -126,6 +132,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.action === "get-currentTab") {
     const currentTab = await getCurrentTab();
     sendResponse({ tab: currentTab });
+    return true;
+  }
+  if(message.action==="get-recent-word-keys"){
+    const result = await chrome.storage.local.get("recentWordKeys");
+    sendResponse({ success: true, data: result?.recentWordKeys });
     return true;
   }
 });
