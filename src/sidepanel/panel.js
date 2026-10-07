@@ -7,6 +7,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function renderWordOverview() {
   const {wordObject}=await chrome.storage.session.get('wordObject')
+
+  if(!wordObject){
+    document.getElementById("word-overview-wrapper").innerHTML = `
+      <div style="text-align:center;word-break:none;color:#d0d0d0;font-weight:500;font-size:18px">
+          <h2>Click some words to see overviews</h2>      
+      </div>
+    `;
+    return;
+  }
   document.getElementById("word-overview-wrapper").innerHTML = "";
   let partsOfSpeech = "",
     meanings = "",
@@ -149,21 +158,25 @@ async function renderWordOverview() {
 
 renderWordOverview();
 
-let vocabulary = {};
+let vocabulary = {}, dataKeys=[];
 async function loadAllVocabulary() {
   const response = await chrome.runtime.sendMessage({
     action: "get-vocabulary",
   });
   vocabulary = response.data;
+  if(!vocabulary){
+    document.getElementById("words-list").innerHTML = `<h2 style="text-align:center;padding: 30px 0;"> No vocabulary found </h2>`
+    return;
+  }
+  Object.keys(vocabulary).forEach((key) => {
+    dataKeys.push(key);
+  })
   renderAllVocabulary(Object.values(vocabulary));
 }
 
 function renderAllVocabulary(wordsObject) {
   document.getElementById("words-list").innerHTML = "";
   wordsObject.forEach((wordObject, index) => {
-    if (wordsObject.length - 1 == index) {
-      return;
-    }
     document.getElementById("words-list").innerHTML += `<li>
                           <div class="top-part">
                               <h3>${wordObject.word}</h3>

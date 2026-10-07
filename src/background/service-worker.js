@@ -94,8 +94,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const wordDataResult = JSON.parse(data.choices[0].message.content);
 
   const newWordObject = {
-    id: `${crypto.randomUUID()}`,
-    ...wordDataResult
+      id: `${crypto.randomUUID()}`,
+      ...wordDataResult
   };
 
   const result = await chrome.storage.local.get("vocabulary");
@@ -108,11 +108,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           wordObject.word === info.selectionText.toLowerCase().trim(),
       ).length > 0
       ? console.log("Word Already exists")
-      : Array.prototype.push.call(vocabulary, newWordObject)
-    : Array.prototype.push.call(vocabulary, newWordObject);
+      : (vocabulary[wordDataResult.word.trim().toLowerCase()] = newWordObject)
+    : (vocabulary[wordDataResult.word.trim().toLowerCase()] = newWordObject);
 
   await chrome.storage.local.set({
-    vocabulary: vocabulary,
+   vocabulary
   });
 });
 

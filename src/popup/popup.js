@@ -1,7 +1,6 @@
 const wordList = document.getElementById("word-list");
 const searchInput = document.getElementById("search-input");
-let vocabulary = {},
-  filteredWords = [];
+let vocabulary = {};
 async function loadVocabulary() {
   try {
     const response = await chrome.runtime.sendMessage({
@@ -11,7 +10,7 @@ async function loadVocabulary() {
     const wordsOnly = Object.values(vocabulary).map(
       (wordObject) => wordObject.word,
     );
-    filteredWords = Object.values(wordsOnly.slice(0, wordsOnly.length - 1));
+    console.log(wordsOnly)
     renderVocabulary(Object.values(vocabulary));
   } catch (error) {
     console.error(error.message);
@@ -20,9 +19,6 @@ async function loadVocabulary() {
 function renderVocabulary(wordsObject) {
   wordList.innerHTML = "";
   wordsObject.forEach((wordObject, index) => {
-    if (wordsObject.length - 1 == index) {
-      return;
-    }
     const listItem = document.createElement("li");
     listItem.textContent = wordObject.word;
     wordList.appendChild(listItem);
