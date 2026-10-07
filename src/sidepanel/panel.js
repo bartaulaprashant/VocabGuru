@@ -3,7 +3,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     renderWordOverview();
   }
 });
-let vocabulary = {}, recentVocabularyKeys=[],
+let vocabulary = {},
+  recentVocabularyKeys = [],
   dataKeys = [];
 
 async function renderWordOverview() {
@@ -87,7 +88,7 @@ async function renderWordOverview() {
                   <img src="/icons/megaphone.png" height="20" width="20" />
                 </button>
                 <button id="favourite-button" data-word="${wordObject.word}">
-                ${wordObject.favourite?'<img src="/icons/starfilled.png" height="15" width="15" />':'<img src="/icons/star.png" height="20" width="20" />'}
+                ${wordObject.favourite ? '<img src="/icons/starfilled.png" height="15" width="15" />' : '<img src="/icons/star.png" height="20" width="20" />'}
                   
                 </button>
               </div>
@@ -165,7 +166,8 @@ async function renderWordOverview() {
     .getElementById("favourite-button")
     .addEventListener("click", async (e) => {
       //change the favourite icon
-      vocabulary[wordObject.word].favourite? (e.target.outerHTML = `<img src="/icons/star.png" height="15" width="15" />`)
+      vocabulary[wordObject.word].favourite
+        ? (e.target.outerHTML = `<img src="/icons/star.png" height="15" width="15" />`)
         : (e.target.outerHTML = `<img src="/icons/starfilled.png" height="15" width="15" />`);
       vocabulary[wordObject.word].favourite =
         !vocabulary[wordObject.word].favourite;
@@ -180,18 +182,21 @@ async function loadAllVocabulary() {
   const response = await chrome.runtime.sendMessage({
     action: "get-vocabulary",
   });
-  const response2=await chrome.runtime.sendMessage({
-    action:"get-recent-word-keys"
-  })
-  vocabulary = response.data;
-  recentVocabularyKeys=response2.data;
-  vocabulary && Object.keys(vocabulary).forEach((key) => {
-    dataKeys.push(key);
+  const response2 = await chrome.runtime.sendMessage({
+    action: "get-recent-word-keys",
   });
-  vocabulary?renderAllVocabulary(Object.values(vocabulary)):renderAllVocabulary();
+  vocabulary = response.data;
+  recentVocabularyKeys = response2.data;
+  vocabulary &&
+    Object.keys(vocabulary).forEach((key) => {
+      dataKeys.push(key);
+    });
+  vocabulary
+    ? renderAllVocabulary(Object.values(vocabulary))
+    : renderAllVocabulary();
 }
 
-function renderAllVocabulary(wordsObject=[]) {
+function renderAllVocabulary(wordsObject = []) {
   document.getElementById("words-list").innerHTML = "";
   if (wordsObject.length === 0) {
     document.getElementById("words-list").innerHTML =
@@ -199,17 +204,37 @@ function renderAllVocabulary(wordsObject=[]) {
     return;
   }
   wordsObject.forEach((wordObject, index) => {
-    document.getElementById("words-list").innerHTML += `<li>
-                          <div class="top-part">
-                              <h3>${wordObject.word}</h3>
-                              <p>${wordObject.pronunciation}</p>
-                          </div>
-                          <div class="bottom-part">
-                            <p>${wordObject.meanings[0]}</p>
-                          </div>
-                        </li>`;
+    const li = document.createElement("li");
+
+    li.classList.add("word-list-item");
+
+    li.innerHTML = `
+    <div class="top-part">
+      <h3>${wordObject.word}</h3>
+      <p>${wordObject.pronunciation}</p>
+    </div>
+
+    <div class="bottom-part">
+      <p>${wordObject.meanings[0]}</p>
+    </div>
+  `;
+
+    li.wordObject = wordObject;
+
+    li.addEventListener("click", async () => {
+      console.log(li.wordObject);
+
+      await chrome.storage.session.set({
+        wordObject: li.wordObject,
+      });
+
+      renderWordOverview(li.wordObject);
+    });
+
+    document.getElementById("words-list").appendChild(li);
   });
 }
+
 loadAllVocabulary();
 
 document.getElementById("search-input").addEventListener("input", (e) => {
@@ -223,22 +248,32 @@ document.getElementById("search-input").addEventListener("input", (e) => {
   renderAllVocabulary(filteredData);
 });
 
-
 function handleTabSelection(e) {
-  const tab=e.target.textContent.trim().toLowerCase();
-  const recentVocab=Object.keys(vocabulary).map((key) => {
-    if(recentVocabularyKeys.includes(key)){
+  const tab = e.target.textContent.trim().toLowerCase();
+  const recentVocab = Object.keys(vocabulary).map((key) => {
+    if (recentVocabularyKeys.includes(key)) {
       return vocabulary[key];
     }
-  })
-  console.log(recentVocab)
-  tab === "all"? renderAllVocabulary(Object.values(vocabulary)):
- tab=== "favourites" ? renderAllVocabulary(Object.values(vocabulary).filter((wordObject) => wordObject.favourite)):(
-  renderAllVocabulary(recentVocab));
+  });
+  tab === "all"
+    ? renderAllVocabulary(Object.values(vocabulary))
+    : tab === "favourites"
+      ? renderAllVocabulary(
+          Object.values(vocabulary).filter(
+            (wordObject) => wordObject.favourite,
+          ),
+        )
+      : renderAllVocabulary(recentVocab);
 }
-document.getElementById("all-vocab-button").addEventListener("click", handleTabSelection);
-document.getElementById("favourite-vocab-button").addEventListener("click", handleTabSelection);
-document.getElementById("recent-vocab-button").addEventListener("click", handleTabSelection);
+document
+  .getElementById("all-vocab-button")
+  .addEventListener("click", handleTabSelection);
+document
+  .getElementById("favourite-vocab-button")
+  .addEventListener("click", handleTabSelection);
+document
+  .getElementById("recent-vocab-button")
+  .addEventListener("click", handleTabSelection);
 //sidepanel close button
 document
   .getElementById("panel-close-button")
