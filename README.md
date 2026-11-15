@@ -19,15 +19,16 @@ Add screenshots under `docs/screenshots/` using these filenames. Replace the ima
 
 ### Popup
 
-![Vocab Guru popup](docs/screenshots/popup.png)
+![Vocab Guru popup](docs/Screenshot%20From%202026-11-15%2010-32-07.png)
 
 ### Sidepanel
 
-![Vocab Guru sidepanel](docs/screenshots/sidepanel.png)
+![Vocab Guru sidepanel](docs/Screenshot%20From%202026-11-15%2010-32-34.png)
 
 ### Word details
 
-![Vocab Guru word details](docs/screenshots/word-details.png)
+![Vocab Guru word details](docs/Screenshot%20From%202026-11-15%2010-32-44.png)
+![Vocab Guru word details large viewpoint](docs/Screenshot%20From%202026-11-15%2010-33-02.png)
 
 ## Install for development
 
