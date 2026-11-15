@@ -3,65 +3,104 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Vocab Guru</title>
     <link rel="stylesheet" href="panel.css" />
   </head>
   <body>
-    <div id="main-container">
-      <!-- header  -->
-      <div id="header">
-        <h1>Vocab Guru</h1>
-      </div>
-
-      <div id="all-words-wrapper">
-        <!-- search box  -->
-        <div id="search-wrapper">
-          <input id="search-input" type="text" placeholder="search word..." />
+    <div class="sidepanel-shell">
+      <header class="panel-topbar">
+        <span class="topbar-label">VOCAB GURU <span>·</span> WORD LIBRARY</span>
+        <button id="panel-close-button" class="close-button" type="button" aria-label="Close side panel">× <span>Close</span></button>
+      </header>
+      <aside class="library-sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">V</div>
+          <div class="brand-copy">
+            <span class="eyebrow">IELTS vocabulary</span>
+            <h1>Vocab Guru</h1>
+          </div>
         </div>
-        <!-- fiter tabs  -->
-        <div id="filter-tabs-wrapper">
-          <ul id="filter-tabs">
-            <li>
-              <button id="all-vocab-button">All</button>
-            </li>
-            <li>
-              <button id="recent-vocab-button">Recent</button>
-            </li>
-            <li>
-              <button id="favourite-vocab-button">Favourites</button>
-            </li>
+
+        <div class="sidebar-section">
+          <p class="section-title">Browse</p>
+          <button class="nav-button active" data-view="all" type="button">
+            <span class="nav-icon">▣</span>
+            All words
+          </button>
+          <button class="nav-button" data-view="recent" type="button">
+            <span class="nav-icon">⏱</span>
+            Recent
+          </button>
+          <button class="nav-button" data-view="favourite" type="button">
+            <span class="nav-icon">★</span>
+            Favourite
+          </button>
+          <button class="nav-button" data-view="important" type="button">
+            <span class="nav-icon">✦</span>
+            Important
+          </button>
+        </div>
+
+        <div class="stats-panel">
+          <p class="section-title">Overview</p>
+          <div class="stats-grid">
+            <div class="stat-card accent">
+              <strong id="stat-total">0</strong>
+              <span>Total</span>
+            </div>
+            <div class="stat-card">
+              <strong id="stat-saved">0</strong>
+              <span>Saved</span>
+            </div>
+            <div class="stat-card">
+              <strong id="stat-recent">0</strong>
+              <span>Recent</span>
+            </div>
+            <div class="stat-card">
+              <strong id="stat-important">0</strong>
+              <span>Important</span>
+            </div>
+          </div>
+        </div>
+
+        <button id="settings-button" class="settings-button" type="button">
+          <span class="nav-icon">⚙</span>
+          Settings
+        </button>
+      </aside>
+
+      <main class="workspace-panel">
+        <header class="workspace-header">
+          <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input id="search-input" type="text" placeholder="Search words..." />
+          </div>
+        </header>
+
+        <div class="filter-bar">
+          <ul id="filter-tabs" class="filter-tabs">
+            <li><button class="active" id="all-vocab-button" type="button">All</button></li>
+            <li><button id="recent-vocab-button" type="button">Recent</button></li>
+            <li><button id="favourite-vocab-button" type="button">Favourite</button></li>
           </ul>
         </div>
 
-        <!-- divider line  -->
-        <div id="dividier-line"></div>
+        <div class="content-stack">
+          <section class="library-card">
+            <div class="card-header">
+              <h2>Word library</h2>
+              <span id="word-count-badge" class="count-badge">0</span>
+            </div>
+            <ul id="words-list" class="word-list"></ul>
+          </section>
 
-        <!-- words list  -->
-        <div id="words-list-wrapper">
-          <h2>Your Words List</h2>
-
-          <div id="words-list-inner">
-            <ul id="words-list"></ul>
-            <!-- <button>
-              <span>Load More</span>
-            </button> -->
-          </div>
+          <section class="detail-card">
+            <div id="word-overview-wrapper"></div>
+          </section>
         </div>
-      </div>
-
-      <!-- word overview wrapper  -->
-      <div id="word-overview">
-        <h2>Word Overview</h2>
-
-        <!-- word data  -->
-        <div id="word-overview-wrapper"></div>
-      </div>
+      </main>
     </div>
 
-    <!-- Panel Close button  -->
-    <div id="panel-close-button">
-      <span>Close</span>
-    </div>
     <script src="panel.js"></script>
   </body>
 </html>

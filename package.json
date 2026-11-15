@@ -1,7 +1,7 @@
 {
   "name": "vocabguru",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Chrome extension for capturing vocabulary while browsing, generating IELTS-focused definitions and examples with Groq, and organizing saved words in a searchable sidepanel with recent, favourite, and importance views and filters.",
   "type": "module",
   "main": "index.js",
   "repository": {

@@ -1,52 +1,43 @@
 <!doctype html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vocabulary Saver</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        width: 320px;
-        margin: 0;
-        padding: 16px;
-        font-family: Arial, sans-serif;
-      }
-
-      h1 {
-        font-size: 20px;
-        margin-top: 0;
-      }
-
-      #search-input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 8px;
-        margin-bottom: 12px;
-      }
-
-      #word-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-
-      #word-list li {
-        padding: 10px;
-        margin-bottom: 6px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-      }
-    </style>
+    <link rel="stylesheet" href="./popup.css" />
   </head>
 
   <body>
-    <h1>Vocabulary Saver</h1>
+    <div id="popup-shell">
+      <div class="popup-header">
+        <div class="brand-wrap">
+          <div class="brand-mark">V</div>
+          <div>
+            <p class="brand-label">Vocab Guru</p>
+          </div>
+        </div>
 
-    <input type="text" placeholder="Enter a word" id="search-input" />
-    <ul id="word-list"></ul>
+        <div class="header-actions">
+          <button id="open-sidepanel-button" class="purple-button" type="button">
+            Open sidepanel
+          </button>
+          <button id="manage-extension-button" class="icon-button" type="button" aria-label="Open extension management page">
+            ⚙
+          </button>
+        </div>
+      </div>
+
+      <section class="recent-section">
+        <div class="section-heading">
+          <h2>Recent words</h2>
+          <span id="recent-count-badge" class="count-badge">0 / 3</span>
+        </div>
+
+        <ul id="word-list" class="word-list"></ul>
+      </section>
+
+      <p class="tip-text">💡 Tip: You can also open the sidepanel to view your saved words from extention icon</p>
+    </div>
 
     <script src="./popup.js" type="module"></script>
   </body>

@@ -72,12 +72,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           {
             role: "user",
             content: `
-        Return ONLY a valid JSON object with exact keys(collocations, ielts_tips, meanings, parts_of_speech_examples, pronunciation, synonyms, antonyms, word, ielts_relevant_topics). Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation, give array of Part of speech it can be used in along with example for each of the context its used in, collocations of the word, synonyms of the word, antonyms of the word, Ielts tips, ielts relevant topics it can be used in along with example for each and also the word provided as well.  
+        Return ONLY a valid JSON object with exact keys(collocations, ielts_tips, meanings, parts_of_speech_examples, pronunciation, synonyms, antonyms, word, ielts_relevance_level ielts_relevant_topics). Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation, give array of part of speech examples where each array item should have  key value pair(example: ..., part_of_speech:...) , collocations of the word, synonyms of the word, antonyms of the word, Ielts tips, ielts_relevance_level should be in one of three values(low, medium, high),  ielts relevant topics it can be used in along with example for each and also the word provided as well.  
 
         Explain the English word "${info.selectionText.toLowerCase().trim()}" for an IELTS student.
 
         Do not include markdown.
         Do not include \`\`\`json.
+        Donot provide empty values for any of the keys, at least provide a single value or a mockup text. 
           `,
           },
         ],
