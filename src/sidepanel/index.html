@@ -89,8 +89,14 @@
           <section class="library-card">
             <div class="card-header">
               <h2>Word library</h2>
-              <span id="word-count-badge" class="count-badge">0</span>
+              <div class="library-actions">
+                <span id="word-count-badge" class="count-badge">0</span>
+                <button id="export-words-button" class="library-action-button" type="button" title="Export vocabulary" aria-label="Export vocabulary">↓</button>
+                <button id="import-words-button" class="library-action-button" type="button" title="Import vocabulary" aria-label="Import vocabulary">↑</button>
+                <input id="import-words-input" class="visually-hidden" type="file" accept="application/json,.json" />
+              </div>
             </div>
+            <p id="library-transfer-status" class="library-transfer-status" role="status" aria-live="polite"></p>
             <ul id="words-list" class="word-list"></ul>
           </section>
 

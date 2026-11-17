@@ -60,12 +60,37 @@ function getWordForms(wordObject) {
   );
 }
 
-function hasDuplicateWord(vocabulary, incomingWord) {
+function findDuplicateWord(vocabulary, incomingWord) {
   const incomingForms = getWordForms(incomingWord);
-  return Object.values(vocabulary).some((savedWord) => {
+  return Object.values(vocabulary).find((savedWord) => {
     const savedForms = getWordForms(savedWord);
     return [...incomingForms].some((form) => savedForms.has(form));
   });
+}
+
+async function showDuplicateIndicator(word) {
+  const displayWord = String(word || "this word").trim();
+  await chrome.action.setBadgeBackgroundColor({ color: "#dc2626" });
+  await chrome.action.setBadgeText({ text: "!" });
+  await chrome.action.setTitle({ title: `Already saved: ${displayWord}` });
+}
+
+async function showSavingIndicator(word) {
+  await chrome.action.setBadgeBackgroundColor({ color: "#5b2ec2" });
+  await chrome.action.setBadgeText({ text: "..." });
+  await chrome.action.setTitle({ title: `Saving ${word}...` });
+}
+
+async function showSavedIndicator(word) {
+  await chrome.action.setBadgeBackgroundColor({ color: "#059669" });
+  await chrome.action.setBadgeText({ text: "OK" });
+  await chrome.action.setTitle({ title: `Saved: ${word}` });
+}
+
+async function showSaveErrorIndicator(word) {
+  await chrome.action.setBadgeBackgroundColor({ color: "#dc2626" });
+  await chrome.action.setBadgeText({ text: "!" });
+  await chrome.action.setTitle({ title: `Could not save: ${word}` });
 }
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -78,7 +103,21 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     return;
   }
 
-  const response = await fetch(
+  const selectedWord = normalizeWordForm(info.selectionText);
+  if (!selectedWord) return;
+
+  const existingResult = await chrome.storage.local.get("vocabulary");
+  const existingVocabulary = existingResult.vocabulary || {};
+  const existingWord = findDuplicateWord(existingVocabulary, { word: selectedWord });
+  if (existingWord) {
+    await showDuplicateIndicator(existingWord.word);
+    return;
+  }
+
+  await showSavingIndicator(selectedWord);
+
+  try {
+    const response = await fetch(
     "https://api.groq.com/openai/v1/chat/completions",
     {
       method: "POST",
@@ -95,7 +134,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             content: `
         Return ONLY a valid JSON object with exact keys(collocations, ielts_tips, meanings, parts_of_speech_examples, pronunciation, synonyms, antonyms, word, word_forms, ielts_relevance_level ielts_relevant_topics). Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation(dont give long string, just pronunciation that is spoken by native speaker), give array of part of speech examples where each array item should have  key value pair(example: ..., part_of_speech:...) , collocations of the word, synonyms of the word, antonyms of the word, Ielts tips, ielts_relevance_level should be in one of three values(low, medium, high),  ielts relevant topics it can be used in along with example for each and also the word provided as well. Also return word_forms as an array of common grammatical forms of the same word, not synonyms or related words. Donot give result in wrong format, follow the output format strictly. Give at least one possible result for each field.
 
-        Explain the English word "${info.selectionText.toLowerCase().trim()}" for an IELTS student.
+        Return word as the base/dictionary form of the selected word, and make the first item in word_forms that same base form. Explain the English word "${info.selectionText.toLowerCase().trim()}" for an IELTS student.
 
         Do not include markdown.
         Do not include \`\`\`json.
@@ -104,38 +143,42 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           },
         ],
 
-        temperature: 1,
+        temperature: 0,
         response_format: {
           type: "json_object",
         },
       }),
     },
-  );
+    );
+
+  if (!response.ok) {
+    throw new Error(`Groq request failed (${response.status})`);
+  }
 
   const data = await response.json();
   const wordDataResult = JSON.parse(data.choices[0].message.content);
+  const returnedForms = Array.isArray(wordDataResult.word_forms) ? wordDataResult.word_forms : [];
+  const baseForm = normalizeWordForm(wordDataResult.word || returnedForms[0]);
+  const wordForms = [...new Set([baseForm, selectedWord, ...returnedForms].map(normalizeWordForm).filter(Boolean))];
 
   const newWordObject = {
       id: `${crypto.randomUUID()}`,
       favourite:false,
       ...wordDataResult,
-      word_forms: Array.isArray(wordDataResult.word_forms) ? wordDataResult.word_forms : [],
+      word: baseForm || normalizeWordForm(wordDataResult.word),
+      word_forms: wordForms,
   };
 
   const result = await chrome.storage.local.get("vocabulary");
   const vocabulary = result.vocabulary || {};
-  const incomingWord = {
-    ...newWordObject,
-    word_forms: [...new Set([info.selectionText, ...newWordObject.word_forms])],
-  };
-
-  if (hasDuplicateWord(vocabulary, incomingWord)) {
-    console.log("Word or word form already exists");
+  const duplicateWord = findDuplicateWord(vocabulary, newWordObject);
+  if (duplicateWord) {
+    await showDuplicateIndicator(duplicateWord.word);
     return;
   }
 
-  const wordKey = normalizeWordForm(wordDataResult.word);
-  vocabulary[wordKey] = incomingWord;
+  const wordKey = newWordObject.word;
+  vocabulary[wordKey] = newWordObject;
 
   const recentResult = await chrome.storage.local.get("recentWordKeys");
   const recentWordKeys = Array.isArray(recentResult.recentWordKeys) ? recentResult.recentWordKeys : [];
@@ -145,6 +188,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   await chrome.storage.local.set({
     vocabulary,
   });
+
+  await showSavedIndicator(newWordObject.word);
+  } catch (error) {
+    console.error("Could not save selected word:", error);
+    await showSaveErrorIndicator(selectedWord);
+  }
 });
 
 //communicating with popup

@@ -15,6 +15,24 @@ function normalizeWordKey(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function getNormalizedWordForms(wordObject) {
+  const forms = Array.isArray(wordObject?.word_forms) ? wordObject.word_forms : [];
+  return new Set([wordObject?.word, ...forms].map(normalizeWordKey).filter(Boolean));
+}
+
+function findMatchingSavedWord(vocabulary, incomingWord) {
+  const incomingForms = getNormalizedWordForms(incomingWord);
+  return Object.values(vocabulary).find((savedWord) => {
+    const savedForms = getNormalizedWordForms(savedWord);
+    return [...incomingForms].some((form) => savedForms.has(form));
+  });
+}
+
+function getBaseWord(wordObject) {
+  const wordForms = Array.isArray(wordObject?.word_forms) ? wordObject.word_forms : [];
+  return String(wordForms[0] || wordObject?.word || "Word").trim();
+}
+
 function escapeHtml(value) {
   if (value === null || value === undefined) return "";
   return String(value)
@@ -173,6 +191,89 @@ function renderStats() {
   if (importantNode) importantNode.textContent = String(getWordEntries().filter((word) => Boolean(word.important)).length);
 }
 
+function setLibraryTransferStatus(message, isError = false) {
+  const statusNode = document.getElementById("library-transfer-status");
+  if (!statusNode) return;
+  statusNode.textContent = message;
+  statusNode.classList.toggle("error", isError);
+}
+
+async function exportVocabulary() {
+  const storedData = await chrome.storage.local.get(["vocabulary", "recentWordKeys"]);
+  const vocabulary = storedData.vocabulary || {};
+  const exportData = {
+    format: "vocab-guru-vocabulary",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    vocabulary,
+    recentWordKeys: Array.isArray(storedData.recentWordKeys) ? storedData.recentWordKeys : [],
+  };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = `vocab-guru-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(downloadUrl);
+  setLibraryTransferStatus(`Exported ${Object.keys(vocabulary).length} words.`);
+}
+
+function getImportedWordEntries(importData) {
+  if (Array.isArray(importData)) return importData;
+  if (Array.isArray(importData?.vocabulary)) return importData.vocabulary;
+  if (importData?.vocabulary && typeof importData.vocabulary === "object") {
+    return Object.values(importData.vocabulary);
+  }
+  if (importData && typeof importData === "object") return Object.values(importData);
+  return [];
+}
+
+async function importVocabulary(file) {
+  try {
+    const importData = JSON.parse(await file.text());
+    const importedWords = getImportedWordEntries(importData);
+    if (!importedWords.length || importedWords.some((word) => !word || typeof word !== "object" || !String(word.word || "").trim())) {
+      throw new Error("This file does not contain a valid vocabulary list.");
+    }
+
+    const storedData = await chrome.storage.local.get(["vocabulary", "recentWordKeys"]);
+    const vocabulary = { ...(storedData.vocabulary || {}) };
+    const importedKeys = [];
+    let skippedCount = 0;
+
+    importedWords.forEach((wordObject) => {
+      const baseWord = normalizeWordKey(wordObject.word);
+      const wordForms = [...new Set([baseWord, ...(Array.isArray(wordObject.word_forms) ? wordObject.word_forms : [])].map(normalizeWordKey).filter(Boolean))];
+      const normalizedWord = { ...wordObject, word: baseWord, word_forms: wordForms };
+
+      if (findMatchingSavedWord(vocabulary, normalizedWord)) {
+        skippedCount += 1;
+        return;
+      }
+
+      vocabulary[baseWord] = normalizedWord;
+      importedKeys.push(baseWord);
+    });
+
+    const importedRecentKeys = Array.isArray(importData?.recentWordKeys)
+      ? importData.recentWordKeys.map(normalizeWordKey).filter((key) => vocabulary[key])
+      : [];
+    const currentRecentKeys = Array.isArray(storedData.recentWordKeys) ? storedData.recentWordKeys : [];
+    const recentKeys = [...new Set([...currentRecentKeys, ...importedRecentKeys, ...importedKeys])].slice(-50);
+
+    await chrome.storage.local.set({ vocabulary, recentWordKeys: recentKeys });
+    state.vocabulary = vocabulary;
+    state.recentKeys = recentKeys;
+    renderStats();
+    renderWordList(getVisibleWords());
+
+    const skippedMessage = skippedCount ? ` ${skippedCount} duplicate${skippedCount === 1 ? "" : "s"} skipped.` : "";
+    setLibraryTransferStatus(`Imported ${importedKeys.length} word${importedKeys.length === 1 ? "" : "s"}.${skippedMessage}`);
+  } catch (error) {
+    setLibraryTransferStatus(error?.message || "Could not import this file.", true);
+  }
+}
+
 function renderWordList(words = []) {
   const listNode = document.getElementById("words-list");
   const countNode = document.getElementById("word-count-badge");
@@ -208,7 +309,7 @@ function renderWordList(words = []) {
       return `
         <li class="word-list-item ${isSelected ? "selected" : ""}" data-word-key="${escapeHtml(key)}" data-word-name="${escapeHtml(wordObject.word || "")}">
           <div class="top-part">
-            <h3>${escapeHtml(wordObject.word || "Word")}</h3>
+            <h3>${escapeHtml(getBaseWord(wordObject))}</h3>
             <div class="word-item-actions">
               <button class="delete-word-button" type="button" aria-label="Delete word">✕</button>
             </div>
@@ -378,7 +479,7 @@ async function renderWordOverview() {
     <div class="word-detail-card">
       <div class="detail-header">
         <div class="word-title-row">
-          <h2>${escapeHtml(wordObject.word || "Word")}</h2>
+          <h2>${escapeHtml(getBaseWord(wordObject))}</h2>
           <div class="word-actions">
             <button class="mini-button" type="button" aria-label="Pronounce word">🔊</button>
             <button class="mini-button" id="delete-word-button" type="button" aria-label="Delete word">🗑</button>
@@ -489,6 +590,22 @@ function attachEvents() {
       renderWordList(getVisibleWords());
     });
   }
+
+  const exportButton = document.getElementById("export-words-button");
+  exportButton?.addEventListener("click", () => {
+    exportVocabulary().catch((error) => {
+      setLibraryTransferStatus(error?.message || "Could not export vocabulary.", true);
+    });
+  });
+
+  const importButton = document.getElementById("import-words-button");
+  const importInput = document.getElementById("import-words-input");
+  importButton?.addEventListener("click", () => importInput?.click());
+  importInput?.addEventListener("change", async () => {
+    const [file] = importInput.files || [];
+    if (file) await importVocabulary(file);
+    importInput.value = "";
+  });
 
   const settingsButton = document.getElementById("settings-button");
   if (settingsButton) {

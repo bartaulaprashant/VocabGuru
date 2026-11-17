@@ -10,7 +10,9 @@ Vocab Guru helps English learners collect unfamiliar words while browsing and re
 - Generate meanings, pronunciation, parts of speech and examples, collocations, synonyms, antonyms, IELTS tips, relevance, and related topics through the Groq API.
 - Review the three most recent words in the popup.
 - Search and browse the saved vocabulary in the sidepanel, with recent, favourite, and important views.
-- Mark words as favourites, pronounce them with text-to-speech, and delete them.
+- Mark words as favourites and delete them.
+- Export saved vocabulary and recent-word history to a downloadable JSON file.
+- Import a Vocab Guru JSON backup; new words are merged into the library while duplicates and matching word forms are skipped.
 - Store vocabulary in Chrome local storage.
 
 ## Screenshots
@@ -63,6 +65,9 @@ The current implementation sends requests to Groq from `src/background/service-w
 2. Right-click and choose **Save to vocabulary**. Vocab Guru requests its learning information from Groq and stores the result locally.
 3. Click the extension icon to review recent words, or open the sidepanel to search and manage your library.
 4. Use the sidepanel controls to filter words, mark favourites, hear pronunciation, or delete entries.
+5. In the **Word library** heading, select the download button to export a JSON backup. Select the upload button to choose a previously exported JSON file and import its words.
+
+Imports merge into the current library without replacing existing entries. Words that match an existing saved word or one of its known grammatical forms are skipped. The transfer status below the library heading reports how many words were imported or exported and how many duplicates were skipped.
 
 The extension also adds an **Open Sidepanel** page context-menu item. The selection tooltip in the content script is experimental and does not currently save a word; use the right-click menu for the working save flow.
 
@@ -78,7 +83,7 @@ The extension also adds an **Open Sidepanel** page context-menu item. The select
 - The Groq key is currently embedded in client-side extension code, which is not suitable for a publicly distributed extension.
 - AI output can be inaccurate or incomplete; generated study material should be reviewed.
 - The extension currently has limited handling for API errors, rate limits, and unexpected response formats.
-- Vocabulary is stored locally in the browser and has no built-in sync, backup, or export/import flow.
+- Vocabulary is stored locally in the browser. Use the JSON export button for manual backups; there is no automatic cloud sync.
 - The selection tooltip is unfinished; it currently displays a placeholder and does not save the selected text.
 - The content script is declared for all URLs, so Chrome may show broad site-access permissions.
 
@@ -87,7 +92,7 @@ The extension also adds an **Open Sidepanel** page context-menu item. The select
 - Move API requests behind a small authenticated backend, or add a clearly documented local development key setup that does not commit credentials.
 - Add robust API error states, response validation, and retry guidance.
 - Finish or remove the experimental selection tooltip.
-- Add vocabulary export/import and optional backup or sync.
+- Add optional encrypted backup or sync across devices.
 - Add focused tests for storage, API response parsing, filtering, and deletion.
 - Add user settings for API configuration and study preferences.
 

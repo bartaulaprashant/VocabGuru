@@ -32,6 +32,11 @@ function getPosTag(wordObject) {
   return label.slice(0, 4);
 }
 
+function getBaseWord(wordObject) {
+  const wordForms = Array.isArray(wordObject?.word_forms) ? wordObject.word_forms : [];
+  return String(wordForms[0] || wordObject?.word || "Word").trim();
+}
+
 function normalizeMeaning(wordObject) {
   const meanings = Array.isArray(wordObject?.meanings)
     ? wordObject.meanings.filter((item) => item != null && item !== "")
@@ -156,7 +161,7 @@ function renderVocabulary(recentWords) {
     listItem.innerHTML = `
       <div class="word-head">
         <div class="word-main">
-          <button class="word-name" type="button">${escapeHtml(wordObject.word)}</button>
+          <button class="word-name" type="button">${escapeHtml(getBaseWord(wordObject))}</button>
           <span class="word-pronunciation">${escapeHtml(pronunciation)}</span>
         </div>
       </div>

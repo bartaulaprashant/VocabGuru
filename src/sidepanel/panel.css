@@ -339,6 +339,88 @@ button {
   margin-bottom: 8px;
 }
 
+.library-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.library-action-button {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #7140d8, #5123ad);
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(81, 35, 173, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.library-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 11px rgba(81, 35, 173, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.library-action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(81, 35, 173, 0.2);
+}
+
+.library-action-button:focus-visible {
+  outline: 3px solid rgba(141, 99, 244, 0.35);
+  outline-offset: 2px;
+}
+
+#import-words-button {
+  background: linear-gradient(145deg, #138b78, #087262);
+  box-shadow: 0 3px 8px rgba(8, 114, 98, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+#import-words-button:hover {
+  box-shadow: 0 5px 11px rgba(8, 114, 98, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+#export-words-button::after,
+#import-words-button::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  width: 11px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.library-transfer-status {
+  min-height: 15px;
+  margin: -2px 0 5px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.library-transfer-status.error {
+  color: var(--danger);
+}
+
 .card-header h2 {
   font-size: 15px;
   color: var(--purple-900);
