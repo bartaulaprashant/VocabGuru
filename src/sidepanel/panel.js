@@ -357,11 +357,20 @@ async function renderWordOverview() {
 
   const synonymsHtml = `
     <div class="info-card">
-      <h3>Synonyms and antonyms</h3>
-      <ul>
-        ${synonyms.length ? synonyms.slice(0, 4).map((item) => `<li>• ${escapeHtml(item)}</li>`).join("") : '<li>No synonyms available yet.</li>'}
-        ${antonyms.length ? antonyms.slice(0, 4).map((item) => `<li>• ${escapeHtml(item)}</li>`).join("") : ""}
-      </ul>
+      <div class="relation-groups">
+        <section class="relation-group">
+          <h4>Synonyms</h4>
+          <ul>
+            ${synonyms.length ? synonyms.slice(0, 4).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : '<li>No synonyms available yet.</li>'}
+          </ul>
+        </section>
+        <section class="relation-group antonym-group">
+          <h4>Antonyms</h4>
+          <ul>
+            ${antonyms.length ? antonyms.slice(0, 4).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : '<li>No antonyms available yet.</li>'}
+          </ul>
+        </section>
+      </div>
     </div>
   `;
 
@@ -391,7 +400,7 @@ async function renderWordOverview() {
         <button class="section-tab" type="button" data-section="examples">Examples</button>
         <button class="section-tab" type="button" data-section="ielts">IELTS</button>
         <button class="section-tab" type="button" data-section="collocations">Collocations</button>
-        <button class="section-tab" type="button" data-section="synonyms">Synonyms</button>
+        <button class="section-tab" type="button" data-section="synonyms">Synonyms and Antonyms</button>
       </div>
 
       <div class="section-panel active" data-panel="overview">${overviewHtml}</div>

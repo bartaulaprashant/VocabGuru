@@ -47,6 +47,27 @@ async function getCurrentTab() {
   return currentTab;
 }
 
+function normalizeWordForm(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function getWordForms(wordObject) {
+  const forms = Array.isArray(wordObject?.word_forms) ? wordObject.word_forms : [];
+  return new Set(
+    [wordObject?.word, ...forms]
+      .map(normalizeWordForm)
+      .filter(Boolean),
+  );
+}
+
+function hasDuplicateWord(vocabulary, incomingWord) {
+  const incomingForms = getWordForms(incomingWord);
+  return Object.values(vocabulary).some((savedWord) => {
+    const savedForms = getWordForms(savedWord);
+    return [...incomingForms].some((form) => savedForms.has(form));
+  });
+}
+
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   //open sidepanel from context menu
   if (info.menuItemId === "open-sidepanel") {
@@ -72,7 +93,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           {
             role: "user",
             content: `
-        Return ONLY a valid JSON object with exact keys(collocations, ielts_tips, meanings, parts_of_speech_examples, pronunciation, synonyms, antonyms, word, ielts_relevance_level ielts_relevant_topics). Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation, give array of part of speech examples where each array item should have  key value pair(example: ..., part_of_speech:...) , collocations of the word, synonyms of the word, antonyms of the word, Ielts tips, ielts_relevance_level should be in one of three values(low, medium, high),  ielts relevant topics it can be used in along with example for each and also the word provided as well.  
+        Return ONLY a valid JSON object with exact keys(collocations, ielts_tips, meanings, parts_of_speech_examples, pronunciation, synonyms, antonyms, word, word_forms, ielts_relevance_level ielts_relevant_topics). Give array of  clear, concise meanings(if there are multiple meaning of the word) of the word, give a simple string of pronunciation(dont give long string, just pronunciation that is spoken by native speaker), give array of part of speech examples where each array item should have  key value pair(example: ..., part_of_speech:...) , collocations of the word, synonyms of the word, antonyms of the word, Ielts tips, ielts_relevance_level should be in one of three values(low, medium, high),  ielts relevant topics it can be used in along with example for each and also the word provided as well. Also return word_forms as an array of common grammatical forms of the same word, not synonyms or related words. Donot give result in wrong format, follow the output format strictly. Give at least one possible result for each field.
 
         Explain the English word "${info.selectionText.toLowerCase().trim()}" for an IELTS student.
 
@@ -97,29 +118,32 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const newWordObject = {
       id: `${crypto.randomUUID()}`,
       favourite:false,
-      ...wordDataResult
+      ...wordDataResult,
+      word_forms: Array.isArray(wordDataResult.word_forms) ? wordDataResult.word_forms : [],
   };
 
   const result = await chrome.storage.local.get("vocabulary");
-
   const vocabulary = result.vocabulary || {};
+  const incomingWord = {
+    ...newWordObject,
+    word_forms: [...new Set([info.selectionText, ...newWordObject.word_forms])],
+  };
 
-  vocabulary.length > 0
-    ? Object.values(vocabulary).filter(
-        (wordObject) =>
-          wordObject.word === info.selectionText.toLowerCase().trim(),
-      ).length > 0
-      ? console.log("Word Already exists")
-      : (vocabulary[wordDataResult.word.trim().toLowerCase()] = newWordObject)
-    : (vocabulary[wordDataResult.word.trim().toLowerCase()] = newWordObject);
+  if (hasDuplicateWord(vocabulary, incomingWord)) {
+    console.log("Word or word form already exists");
+    return;
+  }
 
-    let recentWordKeys=await chrome.storage.local.get('recentWordKeys');
-    recentWordKeys.hasOwnProperty('recentWordKeys')?recentWordKeys=recentWordKeys.recentWordKeys:recentWordKeys=[]
-    recentWordKeys.push(wordDataResult.word.trim().toLowerCase())
-    await chrome.storage.local.set({recentWordKeys})
+  const wordKey = normalizeWordForm(wordDataResult.word);
+  vocabulary[wordKey] = incomingWord;
+
+  const recentResult = await chrome.storage.local.get("recentWordKeys");
+  const recentWordKeys = Array.isArray(recentResult.recentWordKeys) ? recentResult.recentWordKeys : [];
+  recentWordKeys.push(wordKey);
+  await chrome.storage.local.set({ recentWordKeys });
 
   await chrome.storage.local.set({
-   vocabulary
+    vocabulary,
   });
 });
 

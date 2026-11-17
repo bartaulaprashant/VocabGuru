@@ -577,6 +577,48 @@ button {
   gap: 8px;
 }
 
+.relation-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.relation-group {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(250, 246, 255, 0.72);
+}
+
+.relation-group h4 {
+  margin-bottom: 7px;
+  color: var(--purple-700);
+  font-size: 11px;
+}
+
+.relation-group ul {
+  gap: 5px;
+}
+
+.relation-group li {
+  padding-left: 10px;
+  position: relative;
+}
+
+.relation-group li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--purple-500);
+}
+
+.antonym-group li::before {
+  background: var(--warning);
+}
+
 .pos-tag {
   display: inline-flex;
   align-items: center;
